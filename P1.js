@@ -1,6 +1,8 @@
 // UBC CPSC 314 (2015W2) -- P1
 // HAVE FUN!!! :)
 
+
+
 // ASSIGNMENT-SPECIFIC API EXTENSION
 THREE.Object3D.prototype.setMatrix = function(a) {
   this.matrix=a;
@@ -96,7 +98,7 @@ var torsoMatrix = new THREE.Matrix4().set(1,0,0,0, 0,1,0,2.5, 0,0,1,0, 0,0,0,1);
 // CREATE BODY
 var torso = new THREE.Mesh(torsoGeometry,normalMaterial);
 torso.setMatrix(torsoMatrix)
-scene.add(torso);
+scene.add(torso); //TODO!
 
 // TO-DO: PUT TOGETHER THE REST OF YOUR STAR-NOSED MOLE AND ADD TO THE SCENE!
 // Hint: Hint: Add one piece of geometry at a time, then implement the motion for that part. 
