@@ -1,8 +1,6 @@
 // UBC CPSC 314 (2015W2) -- P1
 // HAVE FUN!!! :)
 
-
-
 // ASSIGNMENT-SPECIFIC API EXTENSION
 THREE.Object3D.prototype.setMatrix = function(a) {
   this.matrix=a;
@@ -73,8 +71,13 @@ function makeCube() {
 
 // GEOMETRY
 var torsoGeometry = makeCube();
-var non_uniform_scale = new THREE.Matrix4().set(5,0,0,0, 0,5,0,0, 0,0,8,0, 0,0,0,1);
-torsoGeometry.applyMatrix(non_uniform_scale);
+var scale_torso = new THREE.Matrix4().set(5,0,0,0, 0,5,0,0, 0,0,8,0, 0,0,0,1);
+torsoGeometry.applyMatrix(scale_torso);
+
+var headGeometry = makeCube();
+var scale_head = new THREE.Matrix4().set(4,0,0,0, 0,4,0,0, 0,0,3,0, 0,0,0,1);
+headGeometry.applyMatrix(scale_head);
+
 
 // TO-DO: SPECIFY THE REST OF YOUR STAR-NOSE MOLE'S GEOMETRY. 
 // Note: You will be using transformation matrices to set the shape. 
@@ -85,20 +88,27 @@ torsoGeometry.applyMatrix(non_uniform_scale);
 
 
 
-// MATRICES
+// TRANSFORMATION MATRICES
 var torsoMatrix = new THREE.Matrix4().set(1,0,0,0, 0,1,0,2.5, 0,0,1,0, 0,0,0,1);
-
+var headTorsoMatrix = new THREE.Matrix4().set(1,0,0,0, 0,1,0,0, 0,0,1,5.5, 0,0,0,1);
+headTorsoMatrix.multiply(torsoMatrix);
 // TO-DO: INITIALIZE THE REST OF YOUR MATRICES 
 // Note: Use of parent attribute is not allowed.
 // Hint: Keep hierarchies in mind!   
 // Hint: Play around with the headTorsoMatrix values, what changes in the render? Why?         
 
-
-
 // CREATE BODY
 var torso = new THREE.Mesh(torsoGeometry,normalMaterial);
-torso.setMatrix(torsoMatrix)
-scene.add(torso); //TODO!
+torso.setMatrix(torsoMatrix);
+scene.add(torso);
+
+
+// CREATE HEAD
+var head = new THREE.Mesh(headGeometry, normalMaterial);
+head.setMatrix(headTorsoMatrix);
+scene.add(head);
+
+
 
 // TO-DO: PUT TOGETHER THE REST OF YOUR STAR-NOSED MOLE AND ADD TO THE SCENE!
 // Hint: Hint: Add one piece of geometry at a time, then implement the motion for that part. 
