@@ -170,7 +170,11 @@ function updateBody() {
 
       // TO-DO: IMPLEMENT JUMPCUT/ANIMATION FOR EACH KEY!
       // Note: Remember spacebar sets jumpcut/animate!
-      
+
+      // Implement JUMPCUT for the body
+      //case(key == "U" && !animate):
+      //var torsoRotMatrix = new THREE.Matrix4().set(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+      //TODO:  complete the jumpcut animation      
 
 
     default:
@@ -192,6 +196,8 @@ keyboard.domElement.addEventListener('keydown',function(event){
   else if(keyboard.eventMatches(event,"0")){    // 0: Set camera to neutral position, view reset
     camera.position.set(45,0,0);
     camera.lookAt(scene.position);}
+  else if(keyboard.eventMatches(event, "spacebar")){   // SPACEBAR: switch to jumpcut mode
+    animate = !animate;}
   else if(keyboard.eventMatches(event,"U")){ 
     (key == "U")? init_animation(p1,p0,time_length) : (init_animation(0,Math.PI/4,1), key = "U")}  
 
