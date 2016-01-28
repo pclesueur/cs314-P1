@@ -131,6 +131,7 @@ var time_start; // start time of animation
 var time_end; // end time of animation
 var p; // current frame
 var animate = false; // animate?
+var jumpcut = false; // jumpcut?
 
 // function init_animation()
 // Initializes parameters and sets animate flag to true.
@@ -141,15 +142,18 @@ function init_animation(p_start,p_end,t_length){
   time_length = t_length;
   time_start = clock.getElapsedTime();
   time_end = time_start + time_length;
-  animate = true; // flag for animation
+  if(!jumpcut) {animate = true;} // flag for animation
   return;
 }
 
 function updateBody() {
   switch(true)
   {
-      case(key == "U" && animate):
-      var time = clock.getElapsedTime(); // t seconds passed since the clock started.
+
+      
+     // ROTATE UP FOR THE BODY
+     case(key == "U" && animate):
+     var time = clock.getElapsedTime(); // t seconds passed since the clock started.
 
       if (time > time_end){
         p = p1;
@@ -166,16 +170,20 @@ function updateBody() {
 
       var torsoRotMatrix = new THREE.Matrix4().multiplyMatrices(torsoMatrix,rotateZ);
       torso.setMatrix(torsoRotMatrix); 
-      break
+      break;
+
+      //TODO: ROTATE DOWN FOR BODY
+
+      // ROTATE UP FOR BODY
 
       // TO-DO: IMPLEMENT JUMPCUT/ANIMATION FOR EACH KEY!
       // Note: Remember spacebar sets jumpcut/animate!
 
-      // Implement JUMPCUT for the body
-      //case(key == "U" && !animate):
-      //var torsoRotMatrix = new THREE.Matrix4().set(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
-      //TODO:  complete the jumpcut animation      
-
+      // JUMPCUT CASE
+      //case(key == "U" && jumpcut):
+      //var torsoRotMatrix = new THREE.Matrix4().set(1,0,0,10, 0,1,0,0, 0,0,1,0, 0,0,0,1);
+      //torso.setMatrix(torsoRotMatrix);
+      //break;
 
     default:
       break;
@@ -196,8 +204,8 @@ keyboard.domElement.addEventListener('keydown',function(event){
   else if(keyboard.eventMatches(event,"0")){    // 0: Set camera to neutral position, view reset
     camera.position.set(45,0,0);
     camera.lookAt(scene.position);}
-  else if(keyboard.eventMatches(event, "spacebar")){   // SPACEBAR: switch to jumpcut mode
-    animate = !animate;}
+  else if(keyboard.eventMatches(event, "space")){   // SPACEBAR: switch to jumpcut mode
+    jumpcut = !jumpcut;}
   else if(keyboard.eventMatches(event,"U")){ 
     (key == "U")? init_animation(p1,p0,time_length) : (init_animation(0,Math.PI/4,1), key = "U")}  
 
