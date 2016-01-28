@@ -147,13 +147,22 @@ function init_animation(p_start,p_end,t_length){
 }
 
 function updateBody() {
+
+  function rotateZ(p) {
+    var rotateZ = new THREE.Matrix4().set(1,        0,         0,        0, 
+                                          0,  Math.cos(-p), -Math.sin(-p), 0, 
+                                          0,  Math.sin(-p),  Math.cos(-p), 0,
+                                          0,        0,         0,        1);
+    var torsoRotMatrix = new THREE.Matrix4().multiplyMatrices(torsoMatrix,rotateZ);
+    torso.setMatrix(torsoRotMatrix);     
+  }
+
   switch(true)
   {
 
-      
-     // ROTATE UP FOR THE BODY
-     case(key == "U" && animate):
-     var time = clock.getElapsedTime(); // t seconds passed since the clock started.
+     // ANIMATE CASE
+     case((key == "U" || key == "E")  && animate):
+      var time = clock.getElapsedTime(); // t seconds passed since the clock started.
 
       if (time > time_end){
         p = p1;
@@ -161,39 +170,16 @@ function updateBody() {
         break;
       }
 
-      p = (p1 - p0)*((time-time_start)/time_length) + p0; // current frame 
+      p = (p1 - p0)*((time-time_start)/time_length) + p0; // current frame
 
-      var rotateZ = new THREE.Matrix4().set(1,        0,         0,        0, 
-                                            0, Math.cos(-p),-Math.sin(-p), 0, 
-                                            0, Math.sin(-p), Math.cos(-p), 0,
-                                            0,        0,         0,        1);
-
-      var torsoRotMatrix = new THREE.Matrix4().multiplyMatrices(torsoMatrix,rotateZ);
-      torso.setMatrix(torsoRotMatrix); 
-      break;
-
-      //TODO: ROTATE DOWN FOR BODY
-
-      // ROTATE UP FOR BODY
-
-      // TO-DO: IMPLEMENT JUMPCUT/ANIMATION FOR EACH KEY!
-      // Note: Remember spacebar sets jumpcut/animate!
+      rotateZ(p) 
+    break;
 
       // JUMPCUT CASE
-      case(key == "U" && jumpcut):
+    case((key == "U" || key == "E") && jumpcut):
       p = p1;
-      
-      var rotateZ = new THREE.Matrix4().set(1,        0,         0,        0, 
-                                            0, Math.cos(-p),-Math.sin(-p), 0, 
-                                            0, Math.sin(-p), Math.cos(-p), 0,
-                                            0,        0,         0,        1);
-
-      var torsoRotMatrix = new THREE.Matrix4().multiplyMatrices(torsoMatrix,rotateZ);
-      torso.setMatrix(torsoRotMatrix); 
-      break;
-
-    default:
-      break;
+      rotateZ(p);
+    break;
   }
 }
 
@@ -214,16 +200,19 @@ keyboard.domElement.addEventListener('keydown',function(event){
   else if(keyboard.eventMatches(event, "space")){   // SPACEBAR: switch to jumpcut mode
     jumpcut = !jumpcut;}
   else if(keyboard.eventMatches(event,"U")){ 
-    (key == "U")? init_animation(p1,p0,time_length) : (init_animation(0,Math.PI/4,1), key = "U")}  
+    (key == "U")? init_animation(p1,p0,time_length) : (init_animation(0,Math.PI/4,1), key = "U");
+    //TODO: add case if its "E", to make state lower state.
+  } 
+  else if(keyboard.eventMatches(event,"E")){
+    (key == "E")? init_animation(p1,p0,time_length) : (init_animation(0,-Math.PI/4,1), key = "E");
+    //TODO: add case if its "U", to make state upper state.
+  } 
+  }); 
 
 
   // TO-DO: BIND KEYS TO YOUR JUMP CUTS AND ANIMATIONS
   // Note: Remember spacebar sets jumpcut/animate! 
   // Hint: Look up "threex.keyboardstate by Jerome Tienne" for more info.
-
-
-
-    });
 
 // SETUP UPDATE CALL-BACK
 // Hint: It is useful to understand what is being updated here, the effect, and why.
