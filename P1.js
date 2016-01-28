@@ -180,10 +180,17 @@ function updateBody() {
       // Note: Remember spacebar sets jumpcut/animate!
 
       // JUMPCUT CASE
-      //case(key == "U" && jumpcut):
-      //var torsoRotMatrix = new THREE.Matrix4().set(1,0,0,10, 0,1,0,0, 0,0,1,0, 0,0,0,1);
-      //torso.setMatrix(torsoRotMatrix);
-      //break;
+      case(key == "U" && jumpcut):
+      p = p1;
+      
+      var rotateZ = new THREE.Matrix4().set(1,        0,         0,        0, 
+                                            0, Math.cos(-p),-Math.sin(-p), 0, 
+                                            0, Math.sin(-p), Math.cos(-p), 0,
+                                            0,        0,         0,        1);
+
+      var torsoRotMatrix = new THREE.Matrix4().multiplyMatrices(torsoMatrix,rotateZ);
+      torso.setMatrix(torsoRotMatrix); 
+      break;
 
     default:
       break;
