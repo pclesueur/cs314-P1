@@ -57,6 +57,18 @@ var grid = new THREE.Line(gridGeometry,gridMaterial,THREE.LinePieces);
 //   YOUR WORK STARTS BELOW    //
 /////////////////////////////////
 
+// HELPER FUNCTIONS
+function identityMatrix() {
+  return new THREE.Matrix4().set(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);
+}
+
+function translateMatrix(x, y, z, matrix){
+  var translation = new THREE.Vector4().set(x,y,z,1);
+  //TODO complete the matrix multiplication
+  return matrix.multiplyMatrices()
+}
+
+
 // MATERIALS
 // Note: Feel free to be creative with this! 
 var normalMaterial = new THREE.MeshNormalMaterial();
@@ -91,7 +103,7 @@ headGeometry.applyMatrix(scale_head);
 // TRANSFORMATION MATRICES
 var torsoMatrix = new THREE.Matrix4().set(1,0,0,0, 0,1,0,2.5, 0,0,1,0, 0,0,0,1);
 var headTorsoMatrix = new THREE.Matrix4().set(1,0,0,0, 0,1,0,0, 0,0,1,5.5, 0,0,0,1);
-headTorsoMatrix.multiply(torsoMatrix);
+
 // TO-DO: INITIALIZE THE REST OF YOUR MATRICES 
 // Note: Use of parent attribute is not allowed.
 // Hint: Keep hierarchies in mind!   
@@ -105,7 +117,9 @@ scene.add(torso);
 
 // CREATE HEAD
 var head = new THREE.Mesh(headGeometry, normalMaterial);
-head.setMatrix(headTorsoMatrix);
+var headmatrix = identityMatrix();
+headmatrix.multiplyMatrices(torsoMatrix, headTorsoMatrix);
+head.setMatrix(headmatrix);
 scene.add(head);
 
 
@@ -148,20 +162,22 @@ function init_animation(p_start,p_end,t_length){
 
 function updateBody() {
 
-  function rotateZ(p) {
+  function rotateBodyZ(p) {
     var rotateZ = new THREE.Matrix4().set(1,        0,         0,        0, 
                                           0,  Math.cos(-p), -Math.sin(-p), 0, 
                                           0,  Math.sin(-p),  Math.cos(-p), 0,
                                           0,        0,         0,        1);
     var torsoRotMatrix = new THREE.Matrix4().multiplyMatrices(torsoMatrix,rotateZ);
-    torso.setMatrix(torsoRotMatrix);     
+    torso.setMatrix(torsoRotMatrix);
+    torsoRotMatrix.multiply(headTorsoMatrix);
+    head.setMatrix(torsoRotMatrix);
   }
 
   switch(true)
   {
 
      // ANIMATE CASE
-     case((key == "U" || key == "E" || key == "M")  && animate):
+     case(animate):
       var time = clock.getElapsedTime(); // t seconds passed since the clock started.
 
       if (time > time_end){
@@ -172,13 +188,13 @@ function updateBody() {
 
       p = (p1 - p0)*((time-time_start)/time_length) + p0; // current frame
 
-      rotateZ(p) 
+      rotateBodyZ(p); 
     break;
 
       // JUMPCUT CASE
-    case((key == "U" || key == "E" || key == "M") && jumpcut):
+    case(jumpcut):
       p = p1;
-      rotateZ(p);
+      rotateBodyZ(p);
     break;
   }
 }
