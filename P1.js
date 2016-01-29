@@ -173,10 +173,9 @@ function updateBody() {
     head.setMatrix(torsoRotMatrix);
   }
 
+  if(key == "U" || key == "M" || key == "E"){
   switch(true)
   {
-
-     // ANIMATE CASE
      case(animate):
       var time = clock.getElapsedTime(); // t seconds passed since the clock started.
 
@@ -187,17 +186,53 @@ function updateBody() {
       }
 
       p = (p1 - p0)*((time-time_start)/time_length) + p0; // current frame
-
       rotateBodyZ(p); 
     break;
 
-      // JUMPCUT CASE
     case(jumpcut):
       p = p1;
       rotateBodyZ(p);
     break;
   }
+  }
+} 
+
+function updateHead() {
+  
+  function rotateHeadY(p) {
+    var rotateY = new THREE.Matrix4().set(Math.cos(-p),  0,  Math.sin(-p),  0, 
+                                                0,       1,       0,        0, 
+                                          -Math.sin(-p), 0,  Math.cos(-p),  0,
+                                                0,       0,       0,        1);
+    var headRotMatrix = new THREE.Matrix4().multiplyMatrices(torsoMatrix, headTorsoMatrix);
+    headRotMatrix.multiply(rotateY);
+    head.setMatrix(headRotMatrix);
+  }
+
+  if(key == "H"){
+  switch(true)
+  {
+     case(animate):
+      var time = clock.getElapsedTime(); // t seconds passed since the clock started.
+
+      if (time > time_end){
+        p = p1;
+        animate = false;
+        break;
+      }
+
+      p = (p1 - p0)*((time-time_start)/time_length) + p0; // current frame
+      rotateHeadY(p); 
+    break;
+
+    case(jumpcut):
+      p = p1;
+      rotateHeadY(p);
+    break;
+  }
+  }
 }
+
 
 // LISTEN TO KEYBOARD
 // Hint: Pay careful attention to how the keys already specified work!
@@ -222,7 +257,9 @@ keyboard.domElement.addEventListener('keydown',function(event){
   else if(keyboard.eventMatches(event,"E")){    // E: Tile the body down
     if(key == "U") {init_animation(Math.PI/4,0,1), key = "M"}
     else if(key == "M") {init_animation(0, -Math.PI/4,1), key = "E"}
-    else {init_animation(p1,p0,time_length), key = "M"}} 
+    else {init_animation(p1,p0,time_length), key = "M"}}
+  else if(keyboard.eventMatches(event,"H")){
+    (key == "H")? init_animation(p1,p0,time_length) : (init_animation(0,Math.PI/4,1), key = "H")} 
   }); 
 
 
@@ -234,6 +271,7 @@ keyboard.domElement.addEventListener('keydown',function(event){
 // Hint: It is useful to understand what is being updated here, the effect, and why.
 function update() {
   updateBody();
+  updateHead();
 
   requestAnimationFrame(update);
   renderer.render(scene,camera);
