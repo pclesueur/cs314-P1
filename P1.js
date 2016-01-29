@@ -161,7 +161,7 @@ function updateBody() {
   {
 
      // ANIMATE CASE
-     case((key == "U" || key == "E")  && animate):
+     case((key == "U" || key == "E" || key == "M")  && animate):
       var time = clock.getElapsedTime(); // t seconds passed since the clock started.
 
       if (time > time_end){
@@ -176,7 +176,7 @@ function updateBody() {
     break;
 
       // JUMPCUT CASE
-    case((key == "U" || key == "E") && jumpcut):
+    case((key == "U" || key == "E" || key == "M") && jumpcut):
       p = p1;
       rotateZ(p);
     break;
@@ -187,7 +187,7 @@ function updateBody() {
 // Hint: Pay careful attention to how the keys already specified work!
 var keyboard = new THREEx.KeyboardState();
 var grid_state = false;
-var key;
+var key = "M"
 keyboard.domElement.addEventListener('keydown',function(event){
   if (event.repeat)
     return;
@@ -199,14 +199,14 @@ keyboard.domElement.addEventListener('keydown',function(event){
     camera.lookAt(scene.position);}
   else if(keyboard.eventMatches(event, "space")){   // SPACEBAR: switch to jumpcut mode
     jumpcut = !jumpcut;}
-  else if(keyboard.eventMatches(event,"U")){ 
-    (key == "U")? init_animation(p1,p0,time_length) : (init_animation(0,Math.PI/4,1), key = "U");
-    //TODO: add case if its "E", to make state lower state.
-  } 
-  else if(keyboard.eventMatches(event,"E")){
-    (key == "E")? init_animation(p1,p0,time_length) : (init_animation(0,-Math.PI/4,1), key = "E");
-    //TODO: add case if its "U", to make state upper state.
-  } 
+  else if(keyboard.eventMatches(event,"U")){    // U: Tilt the body up
+    if(key == "E") {init_animation(-Math.PI/4,0,1), key = "M"}
+    else if(key == "M") {init_animation(0, Math.PI/4,1), key = "U"}
+    else {init_animation(p1,p0,time_length), key = "M"}} 
+  else if(keyboard.eventMatches(event,"E")){    // E: Tile the body down
+    if(key == "U") {init_animation(Math.PI/4,0,1), key = "M"}
+    else if(key == "M") {init_animation(0, -Math.PI/4,1), key = "E"}
+    else {init_animation(p1,p0,time_length), key = "M"}} 
   }); 
 
 
