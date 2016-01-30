@@ -287,6 +287,27 @@ function updateHead() {
   }
 }
 
+function updateTail() {
+
+  function rotateTailY(p){
+    tailMatrix = createTailMatrix();
+    var rotateY = identityMatrix();
+    rotateY = rotateMatrix(p, 0, 1, 0, rotateY);
+
+    //translate tailMatrix to origin about that point (0, y, 2)
+    tailMatrix = translateMatrix(0, 0, 2, tailMatrix);
+    tailMatrix.multiply(rotateY);
+    tailMatrix = translateMatrix(0, 0, -2, tailMatrix);
+
+    //rotateY
+    //translate back
+  }
+
+  if(key == "T" || key == "V"){
+    update_animation(rotateTailY);
+  }
+}
+
 
 // LISTEN TO KEYBOARD
 var keyboard = new THREEx.KeyboardState();
@@ -311,10 +332,14 @@ keyboard.domElement.addEventListener('keydown',function(event){
     if(key == "U") {init_animation(Math.PI/4,0,1), key = "M"}
     else if(key == "M") {init_animation(0, -Math.PI/4,1), key = "E"}
     else {init_animation(p1,p0,time_length), key = "M"}}
-  else if(keyboard.eventMatches(event,"H")){   // H: Rotate head right
+  else if(keyboard.eventMatches(event,"H")){   // H: Rotate head left
     (key == "H")? init_animation(p1,p0,time_length) : (init_animation(0,Math.PI/4,1), key = "H")} 
-  else if(keyboard.eventMatches(event,"G")){  // G: Rotate head left
+  else if(keyboard.eventMatches(event,"G")){  // G: Rotate head right
     (key == "G")? init_animation(p1,p0,time_length) : (init_animation(0,-Math.PI/4,1), key = "G")} 
+  else if(keyboard.eventMatches(event,"T")){   // T: Rotate tail left
+    (key == "T")? init_animation(p1,p0,time_length) : (init_animation(0,Math.PI/4,1), key = "T")} 
+  else if(keyboard.eventMatches(event,"V")){  // G: Rotate tail right
+    (key == "V")? init_animation(p1,p0,time_length) : (init_animation(0,-Math.PI/4,1), key = "V")}   
   }); 
 
 
@@ -324,6 +349,7 @@ keyboard.domElement.addEventListener('keydown',function(event){
 function update() {
   updateBody();
   updateHead();
+  updateTail();
 
   drawGeometry();
   requestAnimationFrame(update);
