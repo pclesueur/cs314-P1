@@ -78,12 +78,15 @@ function popMatrix(){
   return matrixStack.pop();
 }
 
-
+// function translateMatrix()
+// translates given matrix by x, y, z
 function translateMatrix(x, y, z, matrix){
   var translation = new THREE.Matrix4().set(1,0,0,x, 0,1,0,y, 0,0,1,z, 0,0,0,1);
   return matrix.multiply(translation);
 }
 
+// function scaleMatrix()
+// scales given matrix by x, y, z
 function scaleMatrix(x, y, z, matrix){
   var scale = new THREE.Matrix4().set(x,0,0,0, 0,y,0,0, 0,0,z,0, 0,0,0,1);
   return matrix.multiply(scale);
@@ -144,8 +147,6 @@ headGeometry.applyMatrix(scale_head);
 //       rotation, translation and scaling.
 // Note: The torso has been done for you (but feel free to modify it!)  
 // Hint: Explicity declare new matrices using Matrix4().set     
-
-
 
 // TRANSFORMATION MATRICES
 var torsoMatrix = new THREE.Matrix4().set(1,0,0,0, 0,1,0,2.5, 0,0,1,0, 0,0,0,1);
@@ -233,44 +234,25 @@ function update_animation(action) {
 
 function updateBody() {
 
-  function rotateBodyZ(p) {
-    var rotateZ = new THREE.Matrix4().set(1,        0,         0,        0, 
-                                          0,  Math.cos(-p), -Math.sin(-p), 0, 
-                                          0,  Math.sin(-p),  Math.cos(-p), 0,
-                                          0,        0,         0,        1);
-    //multiply torsoMatrix by some Rotation
-    var torsoRotMatrix = new THREE.Matrix4().multiplyMatrices(torsoMatrix,rotateZ);
+  function rotateBodyX(p) {
+    var rotateX = identityMatrix();
+    rotateX = rotateMatrix(p, 1, 0, 0, rotateX);
+    var torsoRotMatrix = new THREE.Matrix4().multiplyMatrices(torsoMatrix,rotateX);
     torso.setMatrix(torsoRotMatrix);
-    //update heiarchy accordingly
-    headTorsoMatrix.multiplyMatrices()
-
-
-
   }
 
   if(key == "U" || key == "M" || key == "E"){
-    update_animation(rotateBodyZ);
+    update_animation(rotateBodyX);
   }
 } 
 
 function updateHead() {
   
   function rotateHeadY(p) {
-    var rotateY = new THREE.Matrix4().set(Math.cos(-p),  0,  Math.sin(-p),  0, 
-                                                0,       1,       0,        0, 
-                                          -Math.sin(-p), 0,  Math.cos(-p),  0,
-                                                0,       0,       0,        1);
-    // have a identitiy matrix
-    // translate by torso matrix
-    // translate by the headTorsoMatrix (which depends on torso)
-    // rotate by rotateHeadY
-    var headMatrix = identityMatrix();
-    headMatrix.multiplyMatrices(torsoMatrix, headTorsoMatrix);
-    headMatrix.multiply(rotateHeadY);
-
-    //headTorsoMatrix.multiply(torsoMatrix);
-    //var headRotMatrix = new THREE.Matrix4().multiplyMatrices(headTorsoMatrix, rotateY);
-    head.setMatrix(headMatrix);
+    var rotateY = identityMatrix();
+    rotateY = rotateMatrix(p, 0, 1, 0, rotateY);
+    var headTorsoRotMatrix = new THREE.Matrix4().multiplyMatrices(headTorsoMatrix, rotateY);
+    head.setMatrix(headTorsoRotMatrix);
   }
 
   if(key == "H" || key == "G"){
