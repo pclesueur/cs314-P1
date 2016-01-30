@@ -57,10 +57,28 @@ var grid = new THREE.Line(gridGeometry,gridMaterial,THREE.LinePieces);
 //   YOUR WORK STARTS BELOW    //
 /////////////////////////////////
 
-// HELPER FUNCTIONS
+//////////////////// HELPER FUNCTIONS ////////////////////////////
+var matrixStack = [];
+
 function identityMatrix() {
   return new THREE.Matrix4().set(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);
 }
+
+// function pushMatrix()
+// Pushes a matrix onto the matrix stack (scene graph)
+// Inputs: a matrix to be added
+function pushMatrix (m) {
+  var m2 = new Matrix4(m);
+  matrixStack.push(m2);
+}
+
+// function popMatrix()
+// Removes a matrix from the top of stack
+function popMatrix() {
+  return matrixStack.pop();
+}
+
+
 
 function translateMatrix(x, y, z, matrix){
   var translation = new THREE.Vector4().set(x,y,z,1);
@@ -69,6 +87,7 @@ function translateMatrix(x, y, z, matrix){
 }
 
 
+//////////////////////// MODELLING ////////////////////////////////
 // MATERIALS
 // Note: Feel free to be creative with this! 
 var normalMaterial = new THREE.MeshNormalMaterial();
@@ -81,7 +100,7 @@ function makeCube() {
   return unitCube;
 }
 
-// GEOMETRY
+// GEOMETRY 
 var torsoGeometry = makeCube();
 var scale_torso = new THREE.Matrix4().set(5,0,0,0, 0,5,0,0, 0,0,8,0, 0,0,0,1);
 torsoGeometry.applyMatrix(scale_torso);
@@ -102,7 +121,7 @@ headGeometry.applyMatrix(scale_head);
 
 // TRANSFORMATION MATRICES
 var torsoMatrix = new THREE.Matrix4().set(1,0,0,0, 0,1,0,2.5, 0,0,1,0, 0,0,0,1);
-var headTorsoMatrix = new THREE.Matrix4().set(1,0,0,0, 0,1,0,0, 0,0,1,5.5, 0,0,0,1);
+var headTorsoMatrix = new THREE.Matrix4().set(1,0,0,0, 0,1,0,2.5, 0,0,1,5.5, 0,0,0,1);
 
 // TO-DO: INITIALIZE THE REST OF YOUR MATRICES 
 // Note: Use of parent attribute is not allowed.
@@ -117,9 +136,7 @@ scene.add(torso);
 
 // CREATE HEAD
 var head = new THREE.Mesh(headGeometry, normalMaterial);
-var headmatrix = identityMatrix();
-headmatrix.multiplyMatrices(torsoMatrix, headTorsoMatrix);
-head.setMatrix(headmatrix);
+head.setMatrix(headTorsoMatrix);
 scene.add(head);
 
 
@@ -160,21 +177,11 @@ function init_animation(p_start,p_end,t_length){
   return;
 }
 
-function updateBody() {
-
-  function rotateBodyZ(p) {
-    var rotateZ = new THREE.Matrix4().set(1,        0,         0,        0, 
-                                          0,  Math.cos(-p), -Math.sin(-p), 0, 
-                                          0,  Math.sin(-p),  Math.cos(-p), 0,
-                                          0,        0,         0,        1);
-    var torsoRotMatrix = new THREE.Matrix4().multiplyMatrices(torsoMatrix,rotateZ);
-    torso.setMatrix(torsoRotMatrix);
-    torsoRotMatrix.multiply(headTorsoMatrix);
-    head.setMatrix(torsoRotMatrix);
-  }
-
-  if(key == "U" || key == "M" || key == "E"){
-  switch(true)
+// function execute_animation()
+// Updates the animation 
+// Input: desired action (passed as function)
+function update_animation(action) {
+    switch(true)
   {
      case(animate):
       var time = clock.getElapsedTime(); // t seconds passed since the clock started.
@@ -186,14 +193,35 @@ function updateBody() {
       }
 
       p = (p1 - p0)*((time-time_start)/time_length) + p0; // current frame
-      rotateBodyZ(p); 
+      action(p); 
     break;
 
     case(jumpcut):
       p = p1;
-      rotateBodyZ(p);
+      action(p);
     break;
   }
+}
+
+function updateBody() {
+
+  function rotateBodyZ(p) {
+    var rotateZ = new THREE.Matrix4().set(1,        0,         0,        0, 
+                                          0,  Math.cos(-p), -Math.sin(-p), 0, 
+                                          0,  Math.sin(-p),  Math.cos(-p), 0,
+                                          0,        0,         0,        1);
+    //multiply torsoMatrix by some Rotation
+    var torsoRotMatrix = new THREE.Matrix4().multiplyMatrices(torsoMatrix,rotateZ);
+    torso.setMatrix(torsoRotMatrix);
+    //update heiarchy accordingly
+    headTorsoMatrix.multiplyMatrices()
+
+
+
+  }
+
+  if(key == "U" || key == "M" || key == "E"){
+    update_animation(rotateBodyZ);
   }
 } 
 
@@ -204,32 +232,21 @@ function updateHead() {
                                                 0,       1,       0,        0, 
                                           -Math.sin(-p), 0,  Math.cos(-p),  0,
                                                 0,       0,       0,        1);
-    var headRotMatrix = new THREE.Matrix4().multiplyMatrices(torsoMatrix, headTorsoMatrix);
-    headRotMatrix.multiply(rotateY);
-    head.setMatrix(headRotMatrix);
+    // have a identitiy matrix
+    // translate by torso matrix
+    // translate by the headTorsoMatrix (which depends on torso)
+    // rotate by rotateHeadY
+    var headMatrix = identityMatrix();
+    headMatrix.multiplyMatrices(torsoMatrix, headTorsoMatrix);
+    headMatrix.multiply(rotateHeadY);
+
+    //headTorsoMatrix.multiply(torsoMatrix);
+    //var headRotMatrix = new THREE.Matrix4().multiplyMatrices(headTorsoMatrix, rotateY);
+    head.setMatrix(headMatrix);
   }
 
-  if(key == "H"){
-  switch(true)
-  {
-     case(animate):
-      var time = clock.getElapsedTime(); // t seconds passed since the clock started.
-
-      if (time > time_end){
-        p = p1;
-        animate = false;
-        break;
-      }
-
-      p = (p1 - p0)*((time-time_start)/time_length) + p0; // current frame
-      rotateHeadY(p); 
-    break;
-
-    case(jumpcut):
-      p = p1;
-      rotateHeadY(p);
-    break;
-  }
+  if(key == "H" || key == "G"){
+    update_animation(rotateHeadY);
   }
 }
 
@@ -258,8 +275,10 @@ keyboard.domElement.addEventListener('keydown',function(event){
     if(key == "U") {init_animation(Math.PI/4,0,1), key = "M"}
     else if(key == "M") {init_animation(0, -Math.PI/4,1), key = "E"}
     else {init_animation(p1,p0,time_length), key = "M"}}
-  else if(keyboard.eventMatches(event,"H")){
+  else if(keyboard.eventMatches(event,"H")){   // H: Rotate head right
     (key == "H")? init_animation(p1,p0,time_length) : (init_animation(0,Math.PI/4,1), key = "H")} 
+  else if(keyboard.eventMatches(event,"G")){  // G: Rotate head left
+    (key == "G")? init_animation(p1,p0,time_length) : (init_animation(0,-Math.PI/4,1), key = "G")} 
   }); 
 
 
