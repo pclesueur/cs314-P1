@@ -121,6 +121,8 @@ function rotateMatrix(p, x, y, z, matrix){
   else            {return matrix.multiply(rotZ);}
 }
 
+function createTorsoMatrix() {return new THREE.Matrix4().set(1,0,0,0, 0,1,0,2.5, 0,0,1,0, 0,0,0,1);}
+function createHeadTorsoMatrix() {return new THREE.Matrix4().set(1,0,0,0, 0,1,0,-0.25, 0,0,1,5, 0,0,0,1);}
 
 //////////////////////// MODELLING ////////////////////////////////
 // MATERIALS
@@ -132,39 +134,52 @@ var scale_torso = new THREE.Matrix4().set(5,0,0,0, 0,5,0,0, 0,0,8,0, 0,0,0,1);
 torsoGeometry.applyMatrix(scale_torso);
 
 var headGeometry = makeCube();
-var scale_head = new THREE.Matrix4().set(4,0,0,0, 0,4,0,0, 0,0,3,0, 0,0,0,1);
+var scale_head = new THREE.Matrix4().set(4,0,0,0, 0,4,0,0, 0,0,2,0, 0,0,0,1);
 headGeometry.applyMatrix(scale_head);
+
+var nose1Geometry = makeCube();
+var scale_nose1 = new THREE.Matrix4().set(3,0,0,0, 0,3,0,0, 0,0,1.5,0, 0,0,0,1)
+nose1Geometry.applyMatrix(scale_nose1)
+
+var nose2Geometry = makeCube();
+var scale_nose2 = new THREE.Matrix4().set(1.5,0,0,0, 0,1.5,0,0, 0,0,2,0, 0,0,0,1)
+nose2Geometry.applyMatrix(scale_nose2)
 
 // CREATE GEOMETRY
 var torso = new THREE.Mesh(torsoGeometry,normalMaterial);
 scene.add(torso);
 var head = new THREE.Mesh(headGeometry, normalMaterial);
 scene.add(head);
+var nose1 = new THREE.Mesh(nose1Geometry, normalMaterial);
+scene.add(nose1);
+var nose2 = new THREE.Mesh(nose2Geometry, normalMaterial);
+scene.add(nose2);
 
 // TRANSFORMATION MATRICES
-var torsoMatrix = new THREE.Matrix4().set(1,0,0,0, 0,1,0,2.5, 0,0,1,0, 0,0,0,1);
-var headTorsoMatrix = new THREE.Matrix4().set(1,0,0,0, 0,1,0,0, 0,0,1,5.5, 0,0,0,1);
-
-// TO-DO: INITIALIZE THE REST OF YOUR MATRICES 
-// Note: Use of parent attribute is not allowed.
-// Hint: Keep hierarchies in mind!   
-// Hint: Play around with the headTorsoMatrix values, what changes in the render? Why?         
+var torsoMatrix = createTorsoMatrix();
+var headTorsoMatrix = createHeadTorsoMatrix();
 
 // DRAW MOLE
 function drawGeometry() {
   var drawMatrix = identityMatrix();
 
+  //draw body
   drawMatrix.multiply(torsoMatrix);
   torso.setMatrix(drawMatrix);
 
-  drawMatrix.multiply(headTorsoMatrix);
-  head.setMatrix(drawMatrix);
+//  pushMatrix(drawMatrix);       //save a copy of the body matrix
+
+      // draw head
+      drawMatrix.multiply(headTorsoMatrix);
+      head.setMatrix(drawMatrix);
+
+      // draw nose
+      drawMatrix = translateMatrix(0, -0.25, 1.5, drawMatrix);
+      nose1.setMatrix(drawMatrix);
+      drawMatrix = translateMatrix(0, -0.25, 1.5, drawMatrix);
+      nose2.setMatrix(drawMatrix);
+
 }
-
-// TO-DO: PUT TOGETHER THE REST OF YOUR STAR-NOSED MOLE AND ADD TO THE SCENE!
-// Hint: Hint: Add one piece of geometry at a time, then implement the motion for that part. 
-//             Then you can make sure your hierarchy still works properly after each step.
-
 
 
 // APPLY DIFFERENT JUMP CUTS/ANIMATIONS TO DIFFERNET KEYS
@@ -221,13 +236,13 @@ function update_animation(action) {
       action(p);
     break;
   }
-  drawGeometry();
+//  drawGeometry();
 }
 
 function updateBody() {
 
   function rotateBodyX(p) {
-    torsoMatrix.set(1,0,0,0, 0,1,0,2.5, 0,0,1,0, 0,0,0,1);
+    torsoMatrix = createTorsoMatrix();
     var rotateX = identityMatrix();
     rotateX = rotateMatrix(p, 1, 0, 0, rotateX);
     torsoMatrix.multiply(rotateX);
@@ -241,7 +256,7 @@ function updateBody() {
 function updateHead() {
   
   function rotateHeadY(p) {
-    headTorsoMatrix.set(1,0,0,0, 0,1,0,0, 0,0,1,5.5, 0,0,0,1);
+    headTorsoMatrix = createHeadTorsoMatrix();
     var rotateY = identityMatrix();
     rotateY = rotateMatrix(p, 0, 1, 0, rotateY);
     headTorsoMatrix.multiply(rotateY);
@@ -290,6 +305,7 @@ function update() {
   updateBody();
   updateHead();
 
+  drawGeometry();
   requestAnimationFrame(update);
   renderer.render(scene,camera);
 }
