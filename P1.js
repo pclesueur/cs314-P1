@@ -59,6 +59,8 @@ var grid = new THREE.Line(gridGeometry,gridMaterial,THREE.LinePieces);
 
 //////////////////// HELPER FUNCTIONS ////////////////////////////
 var matrixStack = [];
+//matrixStack.push("Mash");
+//var thing = matrixStack.pop();
 
 function identityMatrix() {
   return new THREE.Matrix4().set(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);
@@ -74,8 +76,9 @@ function makeCube() {
 // function pushMatrix()
 // Pushes a matrix onto the matrix stack (scene graph)
 // Inputs: a matrix to be added
-function pushMatrix (m){
-  var m2 = new Matrix4(m);
+function pushMatrix(m){
+  var m2 = identityMatrix();
+  m2.copy(m);
   matrixStack.push(m2);
 }
 
@@ -121,8 +124,10 @@ function rotateMatrix(p, x, y, z, matrix){
   else            {return matrix.multiply(rotZ);}
 }
 
+// functions to reinitialize transformation matrices
 function createTorsoMatrix() {return new THREE.Matrix4().set(1,0,0,0, 0,1,0,2.5, 0,0,1,0, 0,0,0,1);}
 function createHeadTorsoMatrix() {return new THREE.Matrix4().set(1,0,0,0, 0,1,0,-0.25, 0,0,1,5, 0,0,0,1);}
+function createTailMatrix() {return new THREE.Matrix4().set(1,0,0,0, 0,1,0,-1, 0,0,1,-6.0, 0,0,0,1);}
 
 //////////////////////// MODELLING ////////////////////////////////
 // MATERIALS
@@ -145,6 +150,11 @@ var nose2Geometry = makeCube();
 var scale_nose2 = new THREE.Matrix4().set(1.5,0,0,0, 0,1.5,0,0, 0,0,2,0, 0,0,0,1)
 nose2Geometry.applyMatrix(scale_nose2)
 
+var tailGeometry = makeCube();
+var scale_tail = new THREE.Matrix4().set(1,0,0,0, 0,1,0,0, 0,0,4,0, 0,0,0,1)
+tailGeometry.applyMatrix(scale_tail);
+
+
 // CREATE GEOMETRY
 var torso = new THREE.Mesh(torsoGeometry,normalMaterial);
 scene.add(torso);
@@ -154,10 +164,13 @@ var nose1 = new THREE.Mesh(nose1Geometry, normalMaterial);
 scene.add(nose1);
 var nose2 = new THREE.Mesh(nose2Geometry, normalMaterial);
 scene.add(nose2);
+var tail = new THREE.Mesh(tailGeometry, normalMaterial);
+scene.add(tail);
 
 // TRANSFORMATION MATRICES
 var torsoMatrix = createTorsoMatrix();
 var headTorsoMatrix = createHeadTorsoMatrix();
+var tailMatrix = createTailMatrix();
 
 // DRAW MOLE
 function drawGeometry() {
@@ -167,7 +180,7 @@ function drawGeometry() {
   drawMatrix.multiply(torsoMatrix);
   torso.setMatrix(drawMatrix);
 
-//  pushMatrix(drawMatrix);       //save a copy of the body matrix
+  pushMatrix(drawMatrix);       //save a copy of the body matrix
 
       // draw head
       drawMatrix.multiply(headTorsoMatrix);
@@ -179,6 +192,13 @@ function drawGeometry() {
       drawMatrix = translateMatrix(0, -0.25, 1.5, drawMatrix);
       nose2.setMatrix(drawMatrix);
 
+      // draw tendrals
+
+  drawMatrix = popMatrix();      // return to body frame
+
+  //draw tail
+  drawMatrix.multiply(tailMatrix);
+  tail.setMatrix(drawMatrix);
 }
 
 
