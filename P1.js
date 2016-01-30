@@ -58,6 +58,7 @@ var grid = new THREE.Line(gridGeometry,gridMaterial,THREE.LinePieces);
 /////////////////////////////////
 
 //////////////////// HELPER FUNCTIONS ////////////////////////////
+
 var matrixStack = [];
 
 function identityMatrix() {
@@ -79,12 +80,38 @@ function popMatrix() {
 }
 
 
-
 function translateMatrix(x, y, z, matrix){
-  var translation = new THREE.Vector4().set(x,y,z,1);
-  //TODO complete the matrix multiplication
-  return matrix.multiplyMatrices()
+  var translation = new THREE.Matrix4().set(1,0,0,x, 0,1,0,y, 0,0,1,z, 0,0,0,1);
+  return matrix.multiply(translation);
 }
+
+function scaleMatrix(x, y, z, matrix){
+  var scale = new THREE.Matrix4().set(x,0,0,0, 0,y,0,0, 0,0,z,0, 0,0,0,1);
+  return matrix.multiply(scale);
+}
+/*
+
+function rotateMatrix(p, x, y, z, matrix) {
+  var rotateY = new THREE.Matrix4().set(Math.cos(-p),  0,  Math.sin(-p),  0, 
+                                              0,       1,       0,        0, 
+                                        -Math.sin(-p), 0,  Math.cos(-p),  0,
+                                              0,       0,       0,        1);
+
+  var rotateZ = new THREE.Matrix4().set(1,        0,         0,          0, 
+                                        0,  Math.cos(-p), -Math.sin(-p), 0, 
+                                        0,  Math.sin(-p),  Math.cos(-p), 0,
+                                        0,        0,         0,          1);
+
+  var rotateX = new THREE.Matrix4().set(Math.cos(-p), -Math.sin(-p), 0, 0, 
+                                        Math.sin(-p),  Math.cos(-p), 0, 0, 
+                                            0,            0,         1, 0,
+                                            0,            0,         0, 1);
+  if      (x == 1) {return matrix.applyMatrix(rotateX);}
+  else if (y == 1) {return matrix.applyMatrix(rotateY);}
+  else    (z == 1) {return matrix.applyMatrix(rotateZ);}
+}
+*/
+
 
 
 //////////////////////// MODELLING ////////////////////////////////
@@ -102,6 +129,8 @@ function makeCube() {
 
 // GEOMETRY 
 var torsoGeometry = makeCube();
+//var scale_torso = new THREE.Matrix4().set(5,0,0,0, 0,5,0,0, 0,0,8,0, 0,0,0,1);
+
 var scale_torso = new THREE.Matrix4().set(5,0,0,0, 0,5,0,0, 0,0,8,0, 0,0,0,1);
 torsoGeometry.applyMatrix(scale_torso);
 
