@@ -64,6 +64,13 @@ function identityMatrix() {
   return new THREE.Matrix4().set(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);
 }
 
+// function drawCube()
+// Draws a unit cube centered about the origin.
+function makeCube() {
+  var unitCube = new THREE.BoxGeometry(1,1,1);
+  return unitCube;
+}
+
 // function pushMatrix()
 // Pushes a matrix onto the matrix stack (scene graph)
 // Inputs: a matrix to be added
@@ -115,24 +122,12 @@ function rotateMatrix(p, x, y, z, matrix){
 }
 
 
-
 //////////////////////// MODELLING ////////////////////////////////
 // MATERIALS
-// Note: Feel free to be creative with this! 
 var normalMaterial = new THREE.MeshNormalMaterial();
-
-// function drawCube()
-// Draws a unit cube centered about the origin.
-// Note: You will be using this for all of your geometry
-function makeCube() {
-  var unitCube = new THREE.BoxGeometry(1,1,1);
-  return unitCube;
-}
 
 // GEOMETRY 
 var torsoGeometry = makeCube();
-//var scale_torso = new THREE.Matrix4().set(5,0,0,0, 0,5,0,0, 0,0,8,0, 0,0,0,1);
-
 var scale_torso = new THREE.Matrix4().set(5,0,0,0, 0,5,0,0, 0,0,8,0, 0,0,0,1);
 torsoGeometry.applyMatrix(scale_torso);
 
@@ -140,35 +135,31 @@ var headGeometry = makeCube();
 var scale_head = new THREE.Matrix4().set(4,0,0,0, 0,4,0,0, 0,0,3,0, 0,0,0,1);
 headGeometry.applyMatrix(scale_head);
 
-
-// TO-DO: SPECIFY THE REST OF YOUR STAR-NOSE MOLE'S GEOMETRY. 
-// Note: You will be using transformation matrices to set the shape. 
-// Note: You are not allowed to use the tools Three.js provides for 
-//       rotation, translation and scaling.
-// Note: The torso has been done for you (but feel free to modify it!)  
-// Hint: Explicity declare new matrices using Matrix4().set     
+// CREATE GEOMETRY
+var torso = new THREE.Mesh(torsoGeometry,normalMaterial);
+scene.add(torso);
+var head = new THREE.Mesh(headGeometry, normalMaterial);
+scene.add(head);
 
 // TRANSFORMATION MATRICES
 var torsoMatrix = new THREE.Matrix4().set(1,0,0,0, 0,1,0,2.5, 0,0,1,0, 0,0,0,1);
-var headTorsoMatrix = new THREE.Matrix4().set(1,0,0,0, 0,1,0,2.5, 0,0,1,5.5, 0,0,0,1);
+var headTorsoMatrix = new THREE.Matrix4().set(1,0,0,0, 0,1,0,0, 0,0,1,5.5, 0,0,0,1);
 
 // TO-DO: INITIALIZE THE REST OF YOUR MATRICES 
 // Note: Use of parent attribute is not allowed.
 // Hint: Keep hierarchies in mind!   
 // Hint: Play around with the headTorsoMatrix values, what changes in the render? Why?         
 
-// CREATE BODY
-var torso = new THREE.Mesh(torsoGeometry,normalMaterial);
-torso.setMatrix(torsoMatrix);
-scene.add(torso);
+// DRAW MOLE
+function drawGeometry() {
+  var drawMatrix = identityMatrix();
 
+  drawMatrix.multiply(torsoMatrix);
+  torso.setMatrix(drawMatrix);
 
-// CREATE HEAD
-var head = new THREE.Mesh(headGeometry, normalMaterial);
-head.setMatrix(headTorsoMatrix);
-scene.add(head);
-
-
+  drawMatrix.multiply(headTorsoMatrix);
+  head.setMatrix(drawMatrix);
+}
 
 // TO-DO: PUT TOGETHER THE REST OF YOUR STAR-NOSED MOLE AND ADD TO THE SCENE!
 // Hint: Hint: Add one piece of geometry at a time, then implement the motion for that part. 
@@ -222,7 +213,7 @@ function update_animation(action) {
       }
 
       p = (p1 - p0)*((time-time_start)/time_length) + p0; // current frame
-      action(p); 
+      action(p);
     break;
 
     case(jumpcut):
@@ -230,15 +221,16 @@ function update_animation(action) {
       action(p);
     break;
   }
+  drawGeometry();
 }
 
 function updateBody() {
 
   function rotateBodyX(p) {
+    torsoMatrix.set(1,0,0,0, 0,1,0,2.5, 0,0,1,0, 0,0,0,1);
     var rotateX = identityMatrix();
     rotateX = rotateMatrix(p, 1, 0, 0, rotateX);
-    var torsoRotMatrix = new THREE.Matrix4().multiplyMatrices(torsoMatrix,rotateX);
-    torso.setMatrix(torsoRotMatrix);
+    torsoMatrix.multiply(rotateX);
   }
 
   if(key == "U" || key == "M" || key == "E"){
@@ -249,10 +241,10 @@ function updateBody() {
 function updateHead() {
   
   function rotateHeadY(p) {
+    headTorsoMatrix.set(1,0,0,0, 0,1,0,0, 0,0,1,5.5, 0,0,0,1);
     var rotateY = identityMatrix();
     rotateY = rotateMatrix(p, 0, 1, 0, rotateY);
-    var headTorsoRotMatrix = new THREE.Matrix4().multiplyMatrices(headTorsoMatrix, rotateY);
-    head.setMatrix(headTorsoRotMatrix);
+    headTorsoMatrix.multiply(rotateY);
   }
 
   if(key == "H" || key == "G"){
@@ -262,7 +254,6 @@ function updateHead() {
 
 
 // LISTEN TO KEYBOARD
-// Hint: Pay careful attention to how the keys already specified work!
 var keyboard = new THREEx.KeyboardState();
 var grid_state = false;
 var key = "M"
@@ -293,11 +284,8 @@ keyboard.domElement.addEventListener('keydown',function(event){
 
 
   // TO-DO: BIND KEYS TO YOUR JUMP CUTS AND ANIMATIONS
-  // Note: Remember spacebar sets jumpcut/animate! 
-  // Hint: Look up "threex.keyboardstate by Jerome Tienne" for more info.
 
 // SETUP UPDATE CALL-BACK
-// Hint: It is useful to understand what is being updated here, the effect, and why.
 function update() {
   updateBody();
   updateHead();
