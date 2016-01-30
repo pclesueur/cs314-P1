@@ -58,7 +58,6 @@ var grid = new THREE.Line(gridGeometry,gridMaterial,THREE.LinePieces);
 /////////////////////////////////
 
 //////////////////// HELPER FUNCTIONS ////////////////////////////
-
 var matrixStack = [];
 
 function identityMatrix() {
@@ -68,14 +67,14 @@ function identityMatrix() {
 // function pushMatrix()
 // Pushes a matrix onto the matrix stack (scene graph)
 // Inputs: a matrix to be added
-function pushMatrix (m) {
+function pushMatrix (m){
   var m2 = new Matrix4(m);
   matrixStack.push(m2);
 }
 
 // function popMatrix()
 // Removes a matrix from the top of stack
-function popMatrix() {
+function popMatrix(){
   return matrixStack.pop();
 }
 
@@ -89,28 +88,28 @@ function scaleMatrix(x, y, z, matrix){
   var scale = new THREE.Matrix4().set(x,0,0,0, 0,y,0,0, 0,0,z,0, 0,0,0,1);
   return matrix.multiply(scale);
 }
-/*
 
-function rotateMatrix(p, x, y, z, matrix) {
-  var rotateY = new THREE.Matrix4().set(Math.cos(-p),  0,  Math.sin(-p),  0, 
-                                              0,       1,       0,        0, 
-                                        -Math.sin(-p), 0,  Math.cos(-p),  0,
-                                              0,       0,       0,        1);
+// function rotateMatrix
+// Note:  can only rotate by one axis. Oblique rotations are not accepted. TODO: make robust.
+function rotateMatrix(p, x, y, z, matrix){
+  var rotY = new THREE.Matrix4().set(Math.cos(-p),  0,  Math.sin(-p),  0, 
+                                           0,       1,       0,        0, 
+                                     -Math.sin(-p), 0,  Math.cos(-p),  0,
+                                           0,       0,       0,        1);
 
-  var rotateZ = new THREE.Matrix4().set(1,        0,         0,          0, 
-                                        0,  Math.cos(-p), -Math.sin(-p), 0, 
-                                        0,  Math.sin(-p),  Math.cos(-p), 0,
-                                        0,        0,         0,          1);
+  var rotX = new THREE.Matrix4().set(1,        0,         0,          0, 
+                                     0,  Math.cos(-p), -Math.sin(-p), 0, 
+                                     0,  Math.sin(-p),  Math.cos(-p), 0,
+                                     0,        0,         0,          1);
 
-  var rotateX = new THREE.Matrix4().set(Math.cos(-p), -Math.sin(-p), 0, 0, 
-                                        Math.sin(-p),  Math.cos(-p), 0, 0, 
-                                            0,            0,         1, 0,
-                                            0,            0,         0, 1);
-  if      (x == 1) {return matrix.applyMatrix(rotateX);}
-  else if (y == 1) {return matrix.applyMatrix(rotateY);}
-  else    (z == 1) {return matrix.applyMatrix(rotateZ);}
+  var rotZ = new THREE.Matrix4().set(Math.cos(-p), -Math.sin(-p), 0, 0, 
+                                     Math.sin(-p),  Math.cos(-p), 0, 0, 
+                                         0,            0,         1, 0,
+                                         0,            0,         0, 1);
+  if(x == 1)      {return matrix.multiply(rotX);}
+  else if(y == 1) {return matrix.multiply(rotY);}
+  else            {return matrix.multiply(rotZ);}
 }
-*/
 
 
 
