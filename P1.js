@@ -59,8 +59,6 @@ var grid = new THREE.Line(gridGeometry,gridMaterial,THREE.LinePieces);
 
 //////////////////// HELPER FUNCTIONS ////////////////////////////
 var matrixStack = [];
-//matrixStack.push("Mash");
-//var thing = matrixStack.pop();
 
 function identityMatrix() {
   return new THREE.Matrix4().set(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);
@@ -137,50 +135,49 @@ function rotateAroundPoint(amount, p1, p2, p3, x, y, z, matrix){
 
 function handleTendrals(m){
 
-  var tendralPos = identityMatrix();  //matrix to define rotation around z
+  // Small tendrals left
+  for(i = 0; i < 2; i++){
+    var m_cur = identityMatrix();
+    m_cur.copy(m);
+    m_cur = translateMatrix(0.2,0,-0.25, m_cur);
+    m_cur = rotateMatrix(i*Math.PI, 0, 0, 1, m_cur);
+    m_cur = translateMatrix(0, 1.25, 0, m_cur);
+    m_cur = rotateAroundPoint(-Math.PI/3, 0,(1.5/2),0, 1, 0, 0, m_cur);
+    small_tendrals[i].setMatrix(m_cur);
+  }
 
+  // Small tendrals right
+  for(i = 2; i < 4; i++){
+    var m_cur = identityMatrix();
+    m_cur.copy(m);
+    m_cur = translateMatrix(-0.2,0,-0.25, m_cur);
+    m_cur = rotateMatrix(i*Math.PI, 0, 0, 1, m_cur);
+    m_cur = translateMatrix(0, 1.25, 0, m_cur);
+    m_cur = rotateAroundPoint(-Math.PI/3, 0,(1.5/2),0, 1, 0, 0, m_cur);
+    small_tendrals[i].setMatrix(m_cur);
+  }
 
-  // TO MODEL: rotate around z, translate by y to position
-  //m_init = translateMatrix(0.3, 1, 0, m_init);
-  //m_init = rotateAroundPoint(-Math.PI/4, 0,0.5,0, 1,0,0, m_init);
-  //small_tendrals[0].setMatrix(m_init);
-
-
+  // Large tendrals left
   for(i = 0; i < 8; i++){
     var m_cur = identityMatrix();
     m_cur.copy(m);
-    m_cur = translateMatrix(0.3,0,-0.25, m_cur);
+    m_cur = translateMatrix(0.55,0,-0.25, m_cur);
     m_cur = rotateMatrix((i*(Math.PI/7)), 0, 0, 1, m_cur);
     m_cur = translateMatrix(0, 1.25, 0, m_cur);
-    m_cur = rotateAroundPoint(-Math.PI/8, 0,(1.5/2),0, 1, 0, 0, m_cur);
+    m_cur = rotateAroundPoint(-Math.PI/4, 0,(1.5/2),0, 1, 0, 0, m_cur);
     large_tendrals[i].setMatrix(m_cur);
   }
 
+  // Large tendrals right
   for(i = 8; i < 16; i++){
     var m_cur = identityMatrix();
     m_cur.copy(m);
-    m_cur = translateMatrix(-0.3,0,-0.25, m_cur);
+    m_cur = translateMatrix(-0.55,0,-0.25, m_cur);
     m_cur = rotateMatrix((i-1)*(Math.PI/7), 0, 0, 1, m_cur);
     m_cur = translateMatrix(0, 1.25, 0, m_cur);
-    m_cur = rotateAroundPoint(-Math.PI/8, 0,(1.5/2),0, 1, 0, 0, m_cur);
+    m_cur = rotateAroundPoint(-Math.PI/4, 0,(1.5/2),0, 1, 0, 0, m_cur);
     large_tendrals[i].setMatrix(m_cur);
   }
-
-/*
-  for each largeTendral
-    rotate is about z by theta
-    translate it some a in y
-    rotate around (y = -0.5) by largeTendralMatrix
-*/
-
-
-
-
-  // TODO: implement function that rotates about a point
-
-
-
-  // TO UPDATE: rotate around z, translate to position, rotate around new x, draw tendral
 }
 
 // functions to reinitialize transformation matrices
@@ -208,7 +205,7 @@ var scale_nose1 = new THREE.Matrix4().set(3,0,0,0, 0,3,0,0, 0,0,1.5,0, 0,0,0,1)
 nose1Geometry.applyMatrix(scale_nose1)
 
 var nose2Geometry = makeCube();
-var scale_nose2 = new THREE.Matrix4().set(1.5,0,0,0, 0,1.5,0,0, 0,0,2,0, 0,0,0,1)
+var scale_nose2 = new THREE.Matrix4().set(2.0,0,0,0, 0,1.5,0,0, 0,0,2,0, 0,0,0,1)
 nose2Geometry.applyMatrix(scale_nose2)
 
 var tailGeometry = makeCube();
