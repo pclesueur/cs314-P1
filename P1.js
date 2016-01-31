@@ -127,65 +127,61 @@ function rotateMatrix(p, x, y, z, matrix){
 // Inputs, p(x,y,z) from local origin, amount to rotate, axis to rotate by (x, y, z),
 //         matrix that is being updated.
 function rotateAroundPoint(amount, p1, p2, p3, x, y, z, matrix){
-  // translate to origin, rotate, translate back.
   matrix = translateMatrix(-p1, -p2, -p3, matrix);
   matrix = rotateMatrix(amount, x, y, z, matrix);
   return translateMatrix(p1, p2, p3, matrix);
 }
 
+function rotateAroundPointMaxtrix(rotMatrix, p1, p2, p3, x, y, z, matrix){
+  matrix = translateMatrix(-p1, -p2, -p3, matrix);
+  matrix.multiply(rotMatrix);
+  return translateMatrix(p1, p2, p3, matrix);
+}
+
 function handleTendrals(m){
 
-  // Small tendrals left
-  for(i = 0; i < 2; i++){
+  // Small tendrals
+  for(i = 0; i < 4; i++){
     var m_cur = identityMatrix();
     m_cur.copy(m);
-    m_cur = translateMatrix(0.2,0,-0.25, m_cur);
+    if(i < 2){
+      m_cur = translateMatrix(0.2,0,-0.25, m_cur);
+    } else {
+      m_cur = translateMatrix(-0.2,0,-0.25, m_cur);
+    }
     m_cur = rotateMatrix(i*Math.PI, 0, 0, 1, m_cur);
     m_cur = translateMatrix(0, 1.25, 0, m_cur);
-    m_cur = rotateAroundPoint(-Math.PI/3, 0,(1.5/2),0, 1, 0, 0, m_cur);
-    small_tendrals[i].setMatrix(m_cur);
-  }
-
-  // Small tendrals right
-  for(i = 2; i < 4; i++){
-    var m_cur = identityMatrix();
-    m_cur.copy(m);
-    m_cur = translateMatrix(-0.2,0,-0.25, m_cur);
-    m_cur = rotateMatrix(i*Math.PI, 0, 0, 1, m_cur);
-    m_cur = translateMatrix(0, 1.25, 0, m_cur);
-    m_cur = rotateAroundPoint(-Math.PI/3, 0,(1.5/2),0, 1, 0, 0, m_cur);
+    m_cur = rotateAroundPointMaxtrix(smallTendralMatrix, 0,(1.5/2),0, 1,0,0, m_cur);
     small_tendrals[i].setMatrix(m_cur);
   }
 
   // Large tendrals left
-  for(i = 0; i < 8; i++){
+  for(i = 0; i < 16; i++){
     var m_cur = identityMatrix();
     m_cur.copy(m);
-    m_cur = translateMatrix(0.55,0,-0.25, m_cur);
-    m_cur = rotateMatrix((i*(Math.PI/7)), 0, 0, 1, m_cur);
+    if(i < 8) {
+        m_cur = translateMatrix(0.55,0,-0.25, m_cur);
+        m_cur = rotateMatrix((i*(Math.PI/7)), 0, 0, 1, m_cur);
+    } else {
+        m_cur = translateMatrix(-0.55,0,-0.25, m_cur);
+        m_cur = rotateMatrix((i-1)*(Math.PI/7), 0, 0, 1, m_cur);
+    }
     m_cur = translateMatrix(0, 1.25, 0, m_cur);
-    m_cur = rotateAroundPoint(-Math.PI/4, 0,(1.5/2),0, 1, 0, 0, m_cur);
+    m_cur = rotateAroundPointMaxtrix(largeTendralMatrix, 0,(1.5/2),0,1,0,0, m_cur);
     large_tendrals[i].setMatrix(m_cur);
-  }
-
-  // Large tendrals right
-  for(i = 8; i < 16; i++){
-    var m_cur = identityMatrix();
-    m_cur.copy(m);
-    m_cur = translateMatrix(-0.55,0,-0.25, m_cur);
-    m_cur = rotateMatrix((i-1)*(Math.PI/7), 0, 0, 1, m_cur);
-    m_cur = translateMatrix(0, 1.25, 0, m_cur);
-    m_cur = rotateAroundPoint(-Math.PI/4, 0,(1.5/2),0, 1, 0, 0, m_cur);
-    large_tendrals[i].setMatrix(m_cur);
-  }
+    }
 }
 
 // functions to reinitialize transformation matrices
 function createTorsoMatrix() {return new THREE.Matrix4().set(1,0,0,0, 0,1,0,2.5, 0,0,1,0, 0,0,0,1);}
 function createHeadTorsoMatrix() {return new THREE.Matrix4().set(1,0,0,0, 0,1,0,-0.25, 0,0,1,5, 0,0,0,1);}
-function createTailMatrix() {return new THREE.Matrix4().set(1,0,0,0, 0,1,0,-1, 0,0,1,-6.0, 0,0,0,1);}
-function createSmallTendralMatrix() {return new THREE.Matrix4().set(1,0,0,0, 0,1,0,0, 0,0,1,1.1, 0,0,0,1);}
-function createLargeTendralMatrix() {return new THREE.Matrix4().set(1,0,0,0, 0,1,0,0, 0,0,1,1.1, 0,0,0,1);}
+function createTailMatrix() {return new THREE.Matrix4().set(1,0,0,0, 0,1,0,-1, 0,0,1,-6.5, 0,0,0,1);}
+function createSmallTendralMatrix() {
+  result = identityMatrix();
+  return rotateMatrix(-Math.PI/2, 1, 0, 0, result);}
+function createLargeTendralMatrix() {
+  result = identityMatrix();
+  return rotateMatrix(-Math.PI/3, 1, 0, 0, result);}
 
 //////////////////////// MODELLING ////////////////////////////////
 // MATERIALS
@@ -209,7 +205,7 @@ var scale_nose2 = new THREE.Matrix4().set(2.0,0,0,0, 0,1.5,0,0, 0,0,2,0, 0,0,0,1
 nose2Geometry.applyMatrix(scale_nose2)
 
 var tailGeometry = makeCube();
-var scale_tail = new THREE.Matrix4().set(1,0,0,0, 0,1,0,0, 0,0,4,0, 0,0,0,1)
+var scale_tail = new THREE.Matrix4().set(0.75,0,0,0, 0,0.75,0,0, 0,0,6,0, 0,0,0,1)
 tailGeometry.applyMatrix(scale_tail);
 
 var smallTendralGeometry = makeCube();
@@ -233,10 +229,7 @@ scene.add(nose2);
 var tail = new THREE.Mesh(tailGeometry, normalMaterial);
 scene.add(tail);
 var smallTendral = new THREE.Mesh(smallTendralGeometry, normalMaterial);
-scene.add(smallTendral);
 var largeTendral = new THREE.Mesh(largeTendralGeometry, normalMaterial);
-scene.add(largeTendral);
-
   // create large tendrals
 var large_tendrals = [];
 for(i = 0; i < 16; i++) {
@@ -244,7 +237,6 @@ for(i = 0; i < 16; i++) {
   large_tendrals[i] = current_tendral;
   scene.add(current_tendral);
 }
-
 // create small tendrals
 var small_tendrals = [];
 for(i = 0; i < 4; i++) {
@@ -285,7 +277,7 @@ function drawGeometry() {
       handleTendrals(drawMatrix);
       
   drawMatrix = popMatrix();      // return to body frame
-  //pushMatrix(drawMatrix);
+  pushMatrix(drawMatrix);
 
       // draw tail
       drawMatrix.multiply(tailMatrix);
@@ -352,7 +344,6 @@ function update_animation(action) {
       action(p);
     break;
   }
-//  drawGeometry();
 }
 
 function updateBody() {
@@ -389,14 +380,26 @@ function updateTail() {
     tailMatrix = createTailMatrix();
     var rotateY = identityMatrix();
     rotateY = rotateMatrix(p, 0, 1, 0, rotateY);
-
-    tailMatrix = translateMatrix(0, 0, 2, tailMatrix);
-    tailMatrix.multiply(rotateY);
-    tailMatrix = translateMatrix(0, 0, -2, tailMatrix);
+    tailMatrix = rotateAroundPointMaxtrix(rotateY, 0,0,-3,0,0,1,tailMatrix);
   }
 
   if(key == "T" || key == "V"){
     update_animation(rotateTailY);
+  }
+}
+
+function updateTendrals() {
+
+  function rotateTendralX(p){
+    smallTendralMatrix = createSmallTendralMatrix();
+    smallTendralMatrix = rotateMatrix(p,1,0,0,smallTendralMatrix);
+
+    largeTendralMatrix = createLargeTendralMatrix();
+    largeTendralMatrix = rotateMatrix(p,1,0,0,largeTendralMatrix);
+  }
+
+  if(key == "N"){
+    update_animation(rotateTendralX);
   }
 }
 
@@ -431,7 +434,9 @@ keyboard.domElement.addEventListener('keydown',function(event){
   else if(keyboard.eventMatches(event,"T")){   // T: Rotate tail left
     (key == "T")? init_animation(p1,p0,time_length) : (init_animation(0,Math.PI/4,1), key = "T")} 
   else if(keyboard.eventMatches(event,"V")){  // G: Rotate tail right
-    (key == "V")? init_animation(p1,p0,time_length) : (init_animation(0,-Math.PI/4,1), key = "V")}   
+    (key == "V")? init_animation(p1,p0,time_length) : (init_animation(0,-Math.PI/4,1), key = "V")} 
+  else if(keyboard.eventMatches(event,"N")){  // N: Update tendrals
+    (key == "N")? init_animation(p1,p0,time_length) : (init_animation(0,Math.PI/4,1), key = "N")}     
   }); 
 
 
@@ -442,6 +447,7 @@ function update() {
   updateBody();
   updateHead();
   updateTail();
+  updateTendrals();
 
   drawGeometry();
   requestAnimationFrame(update);
