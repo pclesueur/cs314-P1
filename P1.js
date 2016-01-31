@@ -124,10 +124,71 @@ function rotateMatrix(p, x, y, z, matrix){
   else            {return matrix.multiply(rotZ);}
 }
 
+// function rotateAroundPoint()
+// Returns a rotation matrix which rotates an object around a point p
+// Inputs, p(x,y,z) from local origin, amount to rotate, axis to rotate by (x, y, z),
+//         matrix that is being updated.
+function rotateAroundPoint(amount, p1, p2, p3, x, y, z, matrix){
+  // translate to origin, rotate, translate back.
+  matrix = translateMatrix(-p1, -p2, -p3, matrix);
+  matrix = rotateMatrix(amount, x, y, z, matrix);
+  return translateMatrix(p1, p2, p3, matrix);
+}
+
+function handleTendrals(m){
+
+  var tendralPos = identityMatrix();  //matrix to define rotation around z
+
+
+  // TO MODEL: rotate around z, translate by y to position
+  //m_init = translateMatrix(0.3, 1, 0, m_init);
+  //m_init = rotateAroundPoint(-Math.PI/4, 0,0.5,0, 1,0,0, m_init);
+  //small_tendrals[0].setMatrix(m_init);
+
+
+  for(i = 0; i < 8; i++){
+    var m_cur = identityMatrix();
+    m_cur.copy(m);
+    m_cur = translateMatrix(0.3,0,-0.25, m_cur);
+    m_cur = rotateMatrix((i*(Math.PI/7)), 0, 0, 1, m_cur);
+    m_cur = translateMatrix(0, 1.25, 0, m_cur);
+    m_cur = rotateAroundPoint(-Math.PI/8, 0,(1.5/2),0, 1, 0, 0, m_cur);
+    large_tendrals[i].setMatrix(m_cur);
+  }
+
+  for(i = 8; i < 16; i++){
+    var m_cur = identityMatrix();
+    m_cur.copy(m);
+    m_cur = translateMatrix(-0.3,0,-0.25, m_cur);
+    m_cur = rotateMatrix((i-1)*(Math.PI/7), 0, 0, 1, m_cur);
+    m_cur = translateMatrix(0, 1.25, 0, m_cur);
+    m_cur = rotateAroundPoint(-Math.PI/8, 0,(1.5/2),0, 1, 0, 0, m_cur);
+    large_tendrals[i].setMatrix(m_cur);
+  }
+
+/*
+  for each largeTendral
+    rotate is about z by theta
+    translate it some a in y
+    rotate around (y = -0.5) by largeTendralMatrix
+*/
+
+
+
+
+  // TODO: implement function that rotates about a point
+
+
+
+  // TO UPDATE: rotate around z, translate to position, rotate around new x, draw tendral
+}
+
 // functions to reinitialize transformation matrices
 function createTorsoMatrix() {return new THREE.Matrix4().set(1,0,0,0, 0,1,0,2.5, 0,0,1,0, 0,0,0,1);}
 function createHeadTorsoMatrix() {return new THREE.Matrix4().set(1,0,0,0, 0,1,0,-0.25, 0,0,1,5, 0,0,0,1);}
 function createTailMatrix() {return new THREE.Matrix4().set(1,0,0,0, 0,1,0,-1, 0,0,1,-6.0, 0,0,0,1);}
+function createSmallTendralMatrix() {return new THREE.Matrix4().set(1,0,0,0, 0,1,0,0, 0,0,1,1.1, 0,0,0,1);}
+function createLargeTendralMatrix() {return new THREE.Matrix4().set(1,0,0,0, 0,1,0,0, 0,0,1,1.1, 0,0,0,1);}
 
 //////////////////////// MODELLING ////////////////////////////////
 // MATERIALS
@@ -154,6 +215,14 @@ var tailGeometry = makeCube();
 var scale_tail = new THREE.Matrix4().set(1,0,0,0, 0,1,0,0, 0,0,4,0, 0,0,0,1)
 tailGeometry.applyMatrix(scale_tail);
 
+var smallTendralGeometry = makeCube();
+var scale_small_tendral = new THREE.Matrix4().set(0.25,0,0,0, 0,1,0,0, 0,0,0.25,0, 0,0,0,1)
+smallTendralGeometry.applyMatrix(scale_small_tendral);
+
+var largeTendralGeometry = makeCube();
+var scale_large_tendral = new THREE.Matrix4().set(0.25,0,0,0, 0,1.5,0,0, 0,0,0.25,0, 0,0,0,1)
+largeTendralGeometry.applyMatrix(scale_large_tendral);
+
 
 // CREATE GEOMETRY
 var torso = new THREE.Mesh(torsoGeometry,normalMaterial);
@@ -166,11 +235,33 @@ var nose2 = new THREE.Mesh(nose2Geometry, normalMaterial);
 scene.add(nose2);
 var tail = new THREE.Mesh(tailGeometry, normalMaterial);
 scene.add(tail);
+var smallTendral = new THREE.Mesh(smallTendralGeometry, normalMaterial);
+scene.add(smallTendral);
+var largeTendral = new THREE.Mesh(largeTendralGeometry, normalMaterial);
+scene.add(largeTendral);
+
+  // create large tendrals
+var large_tendrals = [];
+for(i = 0; i < 16; i++) {
+  var current_tendral = largeTendral.clone();
+  large_tendrals[i] = current_tendral;
+  scene.add(current_tendral);
+}
+
+// create small tendrals
+var small_tendrals = [];
+for(i = 0; i < 4; i++) {
+  var current_tendral = smallTendral.clone();
+  small_tendrals[i] = current_tendral;
+  scene.add(current_tendral);
+}
 
 // TRANSFORMATION MATRICES
 var torsoMatrix = createTorsoMatrix();
 var headTorsoMatrix = createHeadTorsoMatrix();
 var tailMatrix = createTailMatrix();
+var smallTendralMatrix = createSmallTendralMatrix();
+var largeTendralMatrix = createLargeTendralMatrix();
 
 // DRAW MOLE
 function drawGeometry() {
@@ -193,12 +284,20 @@ function drawGeometry() {
       nose2.setMatrix(drawMatrix);
 
       // draw tendrals
-
+      drawMatrix = translateMatrix(0, 0, 1.1, drawMatrix);
+      handleTendrals(drawMatrix);
+      
   drawMatrix = popMatrix();      // return to body frame
+  //pushMatrix(drawMatrix);
 
-  //draw tail
-  drawMatrix.multiply(tailMatrix);
-  tail.setMatrix(drawMatrix);
+      // draw tail
+      drawMatrix.multiply(tailMatrix);
+      tail.setMatrix(drawMatrix);
+
+  drawMatrix = popMatrix();
+
+      // feet
+
 }
 
 
@@ -294,13 +393,9 @@ function updateTail() {
     var rotateY = identityMatrix();
     rotateY = rotateMatrix(p, 0, 1, 0, rotateY);
 
-    //translate tailMatrix to origin about that point (0, y, 2)
     tailMatrix = translateMatrix(0, 0, 2, tailMatrix);
     tailMatrix.multiply(rotateY);
     tailMatrix = translateMatrix(0, 0, -2, tailMatrix);
-
-    //rotateY
-    //translate back
   }
 
   if(key == "T" || key == "V"){
