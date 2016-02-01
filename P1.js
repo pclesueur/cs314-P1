@@ -132,12 +132,16 @@ function rotateAroundPoint(amount, p1, p2, p3, x, y, z, matrix){
   return translateMatrix(p1, p2, p3, matrix);
 }
 
+// function rotateAroundPointMaxtrix()
+// Returns a rotation matrix about a point, and rotates based on the given rotation matrix
 function rotateAroundPointMaxtrix(rotMatrix, p1, p2, p3, x, y, z, matrix){
   matrix = translateMatrix(-p1, -p2, -p3, matrix);
   matrix.multiply(rotMatrix);
   return translateMatrix(p1, p2, p3, matrix);
 }
 
+// function handleTendrals()
+// method that draws and updates tendrals on mole nose
 function handleTendrals(m){
 
   // Small tendrals
@@ -172,6 +176,92 @@ function handleTendrals(m){
     }
 }
 
+// function drawFrontRightFoot()
+// method to draw and update front right foot
+function drawFrontRightFoot(m){
+  var m_cur = identityMatrix();
+  m_cur.copy(m);
+  m_cur = translateMatrix(2, -2.5, 3, m_cur);
+  m_cur = rotateAroundPointMaxtrix(frontRightFootMatrix, 0,0,1.5, 1,0,0, m_cur);
+  frontRightFoot.setMatrix(m_cur);
+  m_cur = translateMatrix(1, 0, 1.5, m_cur);
+
+  // draw claws
+  for(i = 0; i < 5; i++){
+    var m_cur2 = identityMatrix();
+    m_cur2.copy(m_cur);
+    m_cur2 = translateMatrix(-i*0.5, 0, 0, m_cur2);
+    front_claws[i].setMatrix(m_cur2);
+  }
+}
+
+// function drawFrontLeftFoot()
+// method to draw and update front left foot
+function drawFrontLeftFoot(m){
+  var m_cur = identityMatrix();
+  m_cur.copy(m);
+  m_cur = translateMatrix(-2, -2.5, 3, m_cur);
+  m_cur = rotateAroundPointMaxtrix(frontLeftFootMatrix, 0,0,1.5, 1,0,0, m_cur);
+  frontLeftFoot.setMatrix(m_cur);
+  m_cur = translateMatrix(1, 0, 1.5, m_cur);
+
+  // draw claws
+  for(i = 5; i < 10; i++){
+    var m_cur2 = identityMatrix();
+    m_cur2.copy(m_cur);
+    m_cur2 = translateMatrix(-(i-5)*0.5, 0, 0, m_cur2);
+    front_claws[i].setMatrix(m_cur2);
+  }
+}
+
+// function drawBackRightFoot()
+// method to draw and update back right foot
+function drawBackRightFoot(m){
+  var m_cur = identityMatrix();
+  m_cur.copy(m);
+  m_cur = translateMatrix(2, -2.25, -2.25, m_cur);
+  m_cur = rotateAroundPointMaxtrix(frontLeftFootMatrix, 0,0,1.5, 1,0,0, m_cur);
+  backRightFoot.setMatrix(m_cur);
+  m_cur = translateMatrix(0.6, 0, 1.75, m_cur);
+
+  // draw claws
+  for(i = 0; i < 3; i++){
+    var m_cur2 = identityMatrix();
+    m_cur2.copy(m_cur);
+    m_cur2 = translateMatrix(-i*(1.25/2), 0, 0, m_cur2);
+    back_claws[i].setMatrix(m_cur2);
+  }
+}
+
+// function drawBackLeftFoot()
+// method to draw and update back left foot
+function drawBackLeftFoot(m){
+  var m_cur = identityMatrix();
+  m_cur.copy(m);
+  m_cur = translateMatrix(-2, -2.25, -2.25, m_cur);
+  m_cur = rotateAroundPointMaxtrix(frontRightFootMatrix, 0,0,1.5, 1,0,0, m_cur);
+  backLeftFoot.setMatrix(m_cur);
+  m_cur = translateMatrix(0.6, 0, 1.75, m_cur);
+
+  // draw claws
+  for(i = 3; i < 6; i++){
+    var m_cur2 = identityMatrix();
+    m_cur2.copy(m_cur);
+    m_cur2 = translateMatrix(-(i-3)*(1.25/2), 0, 0, m_cur2);
+    back_claws[i].setMatrix(m_cur2);
+  }
+}
+
+
+
+
+
+// function drawBackFoot()
+// method to draw and update front foot
+function drawBackFoot(m){
+  return;
+}
+
 // functions to reinitialize transformation matrices
 function createTorsoMatrix() {return new THREE.Matrix4().set(1,0,0,0, 0,1,0,2.5, 0,0,1,0, 0,0,0,1);}
 function createHeadTorsoMatrix() {return new THREE.Matrix4().set(1,0,0,0, 0,1,0,-0.25, 0,0,1,5, 0,0,0,1);}
@@ -182,6 +272,13 @@ function createSmallTendralMatrix() {
 function createLargeTendralMatrix() {
   result = identityMatrix();
   return rotateMatrix(-Math.PI/3, 1, 0, 0, result);}
+function createFrontRightFootMatrix() {
+  result = identityMatrix();
+  return rotateMatrix(-Math.PI/8, 1, 0, 0, result);}
+function createFrontLeftFootMatrix() {
+  result = identityMatrix();
+  return rotateMatrix(-Math.PI/8, 1, 0, 0, result);}
+
 
 //////////////////////// MODELLING ////////////////////////////////
 // MATERIALS
@@ -216,6 +313,22 @@ var largeTendralGeometry = makeCube();
 var scale_large_tendral = new THREE.Matrix4().set(0.25,0,0,0, 0,1.5,0,0, 0,0,0.25,0, 0,0,0,1)
 largeTendralGeometry.applyMatrix(scale_large_tendral);
 
+var frontFootGeometry = makeCube();
+var scale_front_foot = new THREE.Matrix4().set(2,0,0,0, 0,0.75,0,0, 0,0,3,0, 0,0,0,1)
+frontFootGeometry.applyMatrix(scale_front_foot);
+
+var frontClawGeometry = makeCube();
+var scale_front_claw = new THREE.Matrix4().set(0.25,0,0,0, 0,0.75,0,0, 0,0,1.5,0, 0,0,0,1)
+frontClawGeometry.applyMatrix(scale_front_claw);
+
+var backFootGeometry = makeCube();
+var scale_back_foot = new THREE.Matrix4().set(1.5,0,0,0, 0,0.5,0,0, 0,0,3,0, 0,0,0,1)
+backFootGeometry.applyMatrix(scale_back_foot);
+
+var backClawGeometry = makeCube();
+var scale_back_claw = new THREE.Matrix4().set(0.25,0,0,0, 0,0.5,0,0, 0,0,1,0, 0,0,0,1)
+backClawGeometry.applyMatrix(scale_back_claw);
+
 
 // CREATE GEOMETRY
 var torso = new THREE.Mesh(torsoGeometry,normalMaterial);
@@ -228,8 +341,32 @@ var nose2 = new THREE.Mesh(nose2Geometry, normalMaterial);
 scene.add(nose2);
 var tail = new THREE.Mesh(tailGeometry, normalMaterial);
 scene.add(tail);
+var frontRightFoot = new THREE.Mesh(frontFootGeometry, normalMaterial);
+scene.add(frontRightFoot);
+var frontLeftFoot = new THREE.Mesh(frontFootGeometry, normalMaterial);
+scene.add(frontLeftFoot);
+var backRightFoot = new THREE.Mesh(backFootGeometry, normalMaterial);
+scene.add(backRightFoot);
+var backLeftFoot = new THREE.Mesh(backFootGeometry, normalMaterial);
+scene.add(backLeftFoot);
 var smallTendral = new THREE.Mesh(smallTendralGeometry, normalMaterial);
 var largeTendral = new THREE.Mesh(largeTendralGeometry, normalMaterial);
+var frontClaw = new THREE.Mesh(frontClawGeometry, normalMaterial);
+var backClaw = new THREE.Mesh(backClawGeometry, normalMaterial);
+  //create front claws
+var front_claws = [];
+for(i = 0; i < 10; i++) {
+  var current_claw = frontClaw.clone();
+  front_claws[i] = current_claw;
+  scene.add(current_claw);
+} 
+  //create back claws
+var back_claws = [];
+for(i = 0; i < 6; i++) {
+  var current_claw = backClaw.clone();
+  back_claws[i] = current_claw;
+  scene.add(current_claw);
+} 
   // create large tendrals
 var large_tendrals = [];
 for(i = 0; i < 16; i++) {
@@ -245,14 +382,17 @@ for(i = 0; i < 4; i++) {
   scene.add(current_tendral);
 }
 
+
 // TRANSFORMATION MATRICES
 var torsoMatrix = createTorsoMatrix();
 var headTorsoMatrix = createHeadTorsoMatrix();
 var tailMatrix = createTailMatrix();
 var smallTendralMatrix = createSmallTendralMatrix();
 var largeTendralMatrix = createLargeTendralMatrix();
+var frontRightFootMatrix = createFrontRightFootMatrix();
+var frontLeftFootMatrix = createFrontLeftFootMatrix();
 
-// DRAW MOLE
+// DRAW MOLE (HEIARCHY)
 function drawGeometry() {
   var drawMatrix = identityMatrix();
 
@@ -285,17 +425,14 @@ function drawGeometry() {
 
   drawMatrix = popMatrix();
 
-      // feet
-
+      // draw feet
+      drawFrontRightFoot(drawMatrix);
+      drawFrontLeftFoot(drawMatrix);
+      drawBackRightFoot(drawMatrix);
+      drawBackLeftFoot(drawMatrix);
 }
 
-
-// APPLY DIFFERENT JUMP CUTS/ANIMATIONS TO DIFFERNET KEYS
-// Note: The start of "U" animation has been done for you, you must implement the hiearchy and jumpcut.
-// Hint: There are other ways to manipulate and grab clock values!!
-// Hint: Check THREE.js clock documenation for ideas.
-// Hint: It may help to start with a jumpcut and implement the animation after.
-// Hint: Where is updateBody() called?
+////////////////////////////////// ANIMATIONS ////////////////////////////////////////
 var clock = new THREE.Clock(true);
 
 var p0; // start position or angle
@@ -403,6 +540,20 @@ function updateTendrals() {
   }
 }
 
+function updateFeet() {
+
+  function rotateFootX(p){
+    frontRightFootMatrix = createFrontRightFootMatrix();
+    frontRightFootMatrix = rotateMatrix(p, 1,0,0,frontRightFootMatrix);
+    frontLeftFootMatrix = createFrontLeftFootMatrix();
+    frontLeftFootMatrix = rotateMatrix(-p, 1,0,0,frontLeftFootMatrix);
+  }
+
+  if(key == "S") {
+    update_animation(rotateFootX);
+  }
+}
+
 
 // LISTEN TO KEYBOARD
 var keyboard = new THREEx.KeyboardState();
@@ -437,10 +588,10 @@ keyboard.domElement.addEventListener('keydown',function(event){
     (key == "V")? init_animation(p1,p0,time_length) : (init_animation(0,-Math.PI/4,1), key = "V")} 
   else if(keyboard.eventMatches(event,"N")){  // N: Update tendrals
     (key == "N")? init_animation(p1,p0,time_length) : (init_animation(0,Math.PI/4,1), key = "N")}     
+  else if(keyboard.eventMatches(event,"S")){  // N: Update tendrals
+    (key == "S")? init_animation(p1,p0,time_length) : (init_animation(0,Math.PI/8,1), key = "S")} 
   }); 
 
-
-  // TO-DO: BIND KEYS TO YOUR JUMP CUTS AND ANIMATIONS
 
 // SETUP UPDATE CALL-BACK
 function update() {
@@ -448,6 +599,7 @@ function update() {
   updateHead();
   updateTail();
   updateTendrals();
+  updateFeet();
 
   drawGeometry();
   requestAnimationFrame(update);
