@@ -435,6 +435,7 @@ function drawGeometry() {
 ////////////////////////////////// ANIMATIONS ////////////////////////////////////////
 var clock = new THREE.Clock(true);
 
+/*
 var p0; // start position or angle
 var p1; // end position or angle
 var time_length; // total time of animation
@@ -496,6 +497,93 @@ function updateBody() {
     update_animation(rotateBodyX);
   }
 } 
+ // U: Tilt the body up
+  else if(keyboard.eventMatches(event,"U")){   
+    if(key == "E") {init_animation(-Math.PI/4,0,1), key = "M"}
+    else if(key == "M") {init_animation(0, Math.PI/4,1), key = "U"}
+    else {init_animation(p1,p0,time_length), key = "M"}} 
+
+// 1: torso; 2: head; 3: tail; 4: smalltendrals; 5: largetendrals; 6: leftfoot; 7: rightfoot; 8:claws
+
+var start_pos = [0,0];
+var cur_pos = [0,0];              
+var end_pos = [0,0];
+var time_start = [0,0];
+var time_end = [0,0];
+var state = [0,0];
+
+*/
+// initialize array of global variables that define the state of the mole
+
+
+var start_pos = {"torso":0, "head":0, "tail":0, "smalltendral":0, 
+                "largetendral":0, "leftfoot":0, "rightfoot":0, "claws":0};
+var cur_pos = {"torso":0, "head":0, "tail":0, "smalltendral":0, 
+                "largetendral":0, "leftfoot":0, "rightfoot":0, "claws":0};                
+var end_pos = {"torso":0, "head":0, "tail":0, "smalltendral":0, 
+               "largetendral":0, "leftfoot":0, "rightfoot":0, "claws":0};
+var time_start = {"torso":0, "head":0, "tail":0, "smalltendral":0, 
+                 "largetendral":0, "leftfoot":0, "rightfoot":0, "claws":0};
+var time_end = {"torso":0, "head":0, "tail":0, "smalltendral":0, 
+                "largetendral":0, "leftfoot":0, "rightfoot":0, "claws":0};
+var state = {"torso":1, "head":1, "tail":1, "smalltendral":1, 
+             "largetendral":1, "leftfoot":1, "rightfoot":1, "claws":1};
+var animate = true; // animate?
+var jumpcut = false; // jumpcut?
+
+// function init_animation()
+// Initializes parameters and sets animate flag to true.
+// Input: start position or angle, end position or angle, and total time of animation.
+function init_animation(p_start,p_end,t_length,part){
+  start_pos[part] = p_start;
+  end_pos[part] = p_end;
+  time_length = t_length;
+  time_start[part] = clock.getElapsedTime();
+  time_end[part] = time_start[part] + time_length;
+}
+
+// function execute_animation()
+// Updates the animation 
+// Input: desired action (passed as function)
+function update_animation(action,part) {
+  var p;
+  var p0 = start_pos[part];
+  var p1 = end_pos[part];
+  var t_start = time_start[part];
+  var t_end = time_end[part];
+
+    switch(true)
+  {
+     case(animate):
+      var time = clock.getElapsedTime(); // t seconds passed since the clock started.
+
+      if (time > t_end){
+        p = p1;
+        break;
+      }
+
+      p = (p1 - p0)*((time-t_start)/time_length) + p0; // current frame
+      action(p);
+    break;
+
+    case(jumpcut):
+      p = p1;
+      action(p);
+    break;
+  }
+}
+
+
+function updateBody() {
+
+  function rotateBodyX(p) {
+    torsoMatrix = createTorsoMatrix();
+    var rotateX = identityMatrix();
+    rotateX = rotateMatrix(p, 1, 0, 0, rotateX);
+    torsoMatrix.multiply(rotateX);
+  }
+    update_animation(rotateBodyX,"torso");
+} 
 
 function updateHead() {
   
@@ -505,10 +593,7 @@ function updateHead() {
     rotateY = rotateMatrix(p, 0, 1, 0, rotateY);
     headTorsoMatrix.multiply(rotateY);
   }
-
-  if(key == "H" || key == "G"){
-    update_animation(rotateHeadY);
-  }
+    update_animation(rotateHeadY, "head");
 }
 
 function updateTail() {
@@ -520,9 +605,7 @@ function updateTail() {
     tailMatrix = rotateAroundPointMaxtrix(rotateY, 0,0,-3,0,0,1,tailMatrix);
   }
 
-  if(key == "T" || key == "V"){
-    update_animation(rotateTailY);
-  }
+    update_animation(rotateTailY, "tail");
 }
 
 function updateTendrals() {
@@ -534,10 +617,7 @@ function updateTendrals() {
     largeTendralMatrix = createLargeTendralMatrix();
     largeTendralMatrix = rotateMatrix(p,1,0,0,largeTendralMatrix);
   }
-
-  if(key == "N"){
-    update_animation(rotateTendralX);
-  }
+    update_animation(rotateTendralX, "smalltendral");
 }
 
 function updateFeet() {
@@ -548,17 +628,15 @@ function updateFeet() {
     frontLeftFootMatrix = createFrontLeftFootMatrix();
     frontLeftFootMatrix = rotateMatrix(-p, 1,0,0,frontLeftFootMatrix);
   }
-
-  if(key == "S") {
-    update_animation(rotateFootX);
-  }
+    update_animation(rotateFootX, "leftfoot");
 }
 
 
 // LISTEN TO KEYBOARD
 var keyboard = new THREEx.KeyboardState();
 var grid_state = false;
-var key = "M"
+var key;
+var part;
 keyboard.domElement.addEventListener('keydown',function(event){
   if (event.repeat)
     return;
@@ -569,27 +647,32 @@ keyboard.domElement.addEventListener('keydown',function(event){
     camera.position.set(45,0,0);
     camera.lookAt(scene.position);}
   else if(keyboard.eventMatches(event, "space")){   // SPACEBAR: switch to jumpcut mode
-    jumpcut = !jumpcut;}
+    jumpcut = !jumpcut;
+    animate = !animate;}
   else if(keyboard.eventMatches(event,"U")){    // U: Tilt the body up
-    if(key == "E") {init_animation(-Math.PI/4,0,1), key = "M"}
-    else if(key == "M") {init_animation(0, Math.PI/4,1), key = "U"}
-    else {init_animation(p1,p0,time_length), key = "M"}} 
+    part = "torso";
+    (key == "U")? init_animation(end_pos[part],start_pos[part],time_length,part) : (init_animation(0,Math.PI/4,1,part), key = "U")} 
   else if(keyboard.eventMatches(event,"E")){    // E: Tile the body down
-    if(key == "U") {init_animation(Math.PI/4,0,1), key = "M"}
-    else if(key == "M") {init_animation(0, -Math.PI/4,1), key = "E"}
-    else {init_animation(p1,p0,time_length), key = "M"}}
+    part = "torso";
+    (key == "E")? init_animation(end_pos[part],start_pos[part],time_length,part) : (init_animation(0,-Math.PI/4,1,part), key = "E")}
   else if(keyboard.eventMatches(event,"H")){   // H: Rotate head left
-    (key == "H")? init_animation(p1,p0,time_length) : (init_animation(0,Math.PI/4,1), key = "H")} 
+    part = "head";
+    (key == "H")? init_animation(end_pos[part],start_pos[part],time_length,part) : (init_animation(0,Math.PI/4,1,part), key = "H")}
   else if(keyboard.eventMatches(event,"G")){  // G: Rotate head right
-    (key == "G")? init_animation(p1,p0,time_length) : (init_animation(0,-Math.PI/4,1), key = "G")} 
+    part = "head";
+    (key == "G")? init_animation(end_pos[part],start_pos[part],time_length,part) : (init_animation(0,-Math.PI/4,1,part), key = "G")}
   else if(keyboard.eventMatches(event,"T")){   // T: Rotate tail left
-    (key == "T")? init_animation(p1,p0,time_length) : (init_animation(0,Math.PI/4,1), key = "T")} 
+    part = "tail";
+    (key == "T")? init_animation(end_pos[part],start_pos[part],time_length,part) : (init_animation(0,Math.PI/4,1,part), key = "T")}
   else if(keyboard.eventMatches(event,"V")){  // G: Rotate tail right
-    (key == "V")? init_animation(p1,p0,time_length) : (init_animation(0,-Math.PI/4,1), key = "V")} 
+    part = "tail";
+    (key == "V")? init_animation(end_pos[part],start_pos[part],time_length,part) : (init_animation(0,-Math.PI/4,1,part), key = "V")}
   else if(keyboard.eventMatches(event,"N")){  // N: Update tendrals
-    (key == "N")? init_animation(p1,p0,time_length) : (init_animation(0,Math.PI/4,1), key = "N")}     
-  else if(keyboard.eventMatches(event,"S")){  // N: Update tendrals
-    (key == "S")? init_animation(p1,p0,time_length) : (init_animation(0,Math.PI/8,1), key = "S")} 
+    part = "smalltendral";
+    (key == "N")? init_animation(end_pos[part],start_pos[part],time_length,part) : (init_animation(0,Math.PI/4,1,part), key = "N")}
+  else if(keyboard.eventMatches(event,"S")){  // N: Update feet
+    part = "leftfoot";
+    (key == "S")? init_animation(end_pos[part],start_pos[part],time_length,part) : (init_animation(0,Math.PI/8,1,part), key = "S")}
   }); 
 
 
